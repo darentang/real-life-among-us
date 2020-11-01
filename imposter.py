@@ -16,17 +16,14 @@ def connect_server(sender_email, password):
     return server
 
 def send(server, player_rooms, email_address, imposter_index, room_dict, test=False):
-    for i in imposter_index:
-        player_rooms[i] = 'IMPOSTER\n'
-        player_rooms[i] += 'The other imposter(s): ' + ' ,'.join([email_address[j] for j in imposter_index if j != i])
-
-
     for i, player in enumerate(player_idx):
         choice = np.random.choice(rooms, num_rooms, replace=False)
         if player not in imposter_index:
             player_rooms[player] = 'CREWMATE\n\nTasks\n\n'
             player_rooms[player] +=  '\n'.join(list(map(room_dict.__getitem__, choice)))
         else:
+            player_rooms[player] = 'IMPOSTER\n'
+            player_rooms[player] += 'The other imposter(s): ' + ' ,'.join([email_address[j] for j in imposter_index if j != player])
             player_rooms[player] +=  '\n\nFake Tasks\n\n' + '\n'.join(list(map(room_dict.__getitem__, choice)))
 
         text = "\n\nYour role: \n" +  player_rooms[player]
@@ -37,6 +34,11 @@ def send(server, player_rooms, email_address, imposter_index, room_dict, test=Fa
             server.sendmail(sender_email, email_address[i], text)
         
 if __name__ == "__main__":
+    
+    test = True
+    num_imposters = 2
+    num_rooms = 5
+    
     with open('email_login.txt', 'r') as f:
         sender_email = f.readline()[:-1]
         password = f.readline()[:-1]
@@ -44,15 +46,12 @@ if __name__ == "__main__":
     with open('email_list.txt', 'r') as f:
         email_address = f.read().splitlines()
 
-    test = True
     if not test:
         server = connect_server(sender_email, password)
     else:
         server = None
 
     num_players = len(email_address)
-    num_imposters = 2
-    num_rooms = 5
 
     player_idx = list(range(num_players))
     player_rooms = dict(zip(player_idx, [[] for _ in range(num_players)]))
