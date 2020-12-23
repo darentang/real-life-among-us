@@ -27,8 +27,6 @@ function Dev() {
     const [gameSettings, setGameSettings] = useState(null);
     const [gameState, setGameState] = useState("");
 
-    // socket.io host, get session token and history
-    const host = "192.168.0.30:5000"
     
     // const token = fromCookie('game-token');
     const token = 'dev';

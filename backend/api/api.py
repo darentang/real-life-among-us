@@ -203,6 +203,10 @@ def test_api():
     </script>
     """
 
+@app.route('/api/check_connection', methods=['POST'])
+def check_connection():
+    return {'success': True}
+
 @app.route('/api/add_console', methods=['POST'])
 def add_console():
     return _add_console(request)
@@ -1396,6 +1400,6 @@ def disconnect():
 
 if __name__ == '__main__':
     populate(num_players=8, num_consoles=2)
-    socketio.run(app, host='192.168.0.28', port=5000)
+    socketio.run(app, host='192.168.0.28', port=5000, certfile='server.cert', keyfile='server.key')
     # http_server = WSGIServer(('',5000), app, handler_class=WebSocketHandler)
     # http_server.serve_forever()
