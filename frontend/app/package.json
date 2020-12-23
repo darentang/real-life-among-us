@@ -8,6 +8,7 @@
     "@testing-library/user-event": "^12.1.10",
     "bootstrap": "^4.5.3",
     "bootswatch": "^4.5.3",
+    "diff": "^5.0.0",
     "emoji-dictionary": "^1.0.11",
     "emoji-picker-react": "^3.2.4",
     "node-sass": "^4.14.1",

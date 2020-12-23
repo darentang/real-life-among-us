@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext } from "react";
 // import io from 'socket.io-client';
-import io from 'socket.io-client';
+
+import Form from 'react-bootstrap/Form';
+import {useForm} from 'react-hook-form';
 
 import Card from 'react-bootstrap/Card';
 import Container from 'react-bootstrap/Container';
@@ -13,7 +15,7 @@ import ProgressBar from 'react-bootstrap/ProgressBar';
 import { useHistory } from "react-router-dom";
 import SocketContext from '../utilities/socket-context'
 
-import useTypingGame from "react-typing-game-hook";
+
 
 import {
     DisplayConsoleList, 
@@ -25,6 +27,7 @@ import {
     Timer,
     ReactorMeltdown
 } from "../utilities/lobbies.js"
+import Modal from "react-bootstrap/esm/Modal";
 
 
 function MeetingRoom(props) {
@@ -65,6 +68,8 @@ function MeetingRoom(props) {
 
     const socket = props.socket;
     const gameState = props.gameState;
+
+
 
     // no token then return to homepage
     if (token == null) {
@@ -215,29 +220,32 @@ function MeetingRoom(props) {
 
 function Reactor(props) {
 
-    let text = "Giving directions that the mountains are to the west only works when you can see them.";
     const token = props.token;
-    const {
-        states: {
-            charsState,
-            currIndex,
-            phase
-        },
-        actions: { insertTyping, resetTyping, deleteTyping }
-        } = useTypingGame(text, {pauseOnError: true});
+    
+    const text = props.text;
 
-    const handleKey = (key) => {
-        if (key === "Escape") {
-            resetTyping();
-        } else if (key === "Backspace") {
-            deleteTyping(false);
-        } else if (key.length === 1) {
-            insertTyping(key);
-        }
-    };
-
+    const {register, handleSubmit} = useForm();
+    const [showModal, setShowModal] = useState(false);
+    const [inputText, setInputText] = useState('');
+    
     useEffect(() => {
-        if (phase == 2) {
+        props.socket.on("lobby update", (data) => {
+            if (data.game_state == 'end') {
+                props.history.push('/end');
+            }
+        });
+
+        props.socket.on("reactor update", (data) => {
+            if (data.reactor_state == 'trigger') {
+                setInputText('');
+            }
+        })
+    });
+
+    const Diff = require('diff');
+
+    const onSubmit = (data) => {
+        if (text == data.text) {
             const requestOptions = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -246,16 +254,16 @@ function Reactor(props) {
 
             // send request to api
             fetch(sessionStorage.getItem('api-host')+'api/save_core', requestOptions);
+        } else {
+            setShowModal(true);
+            console.log(data.text);
         }
-    }, [phase]);
+    };
 
-    useEffect(() => {
-        props.socket.on("reactor update", (data) => {
-            if (data.reactor_state == "trigger") {
-                resetTyping();
-            }
-        });
-    });
+    const handleFormChange = (e) => {
+        setInputText(e.target.value);
+    }
+
     return (
         <Container>
             <Jumbotron>
@@ -272,34 +280,29 @@ function Reactor(props) {
                 <Row>
                     <Col>
                     <Card>
-                        <Card.Header style={{'font-size': 'large'}}>Finish the typing test to fix the core!</Card.Header>
+                        <Card.Header style={{'font-size': 'large'}}>Type the following passage:</Card.Header>
                         <Card.Body>
-                            <div
-                            onKeyDown={(e) => {
-                                handleKey(e.key);
-                                e.preventDefault();
-                            }}
-                            tabIndex={0}
-                            style={{'font-size': 'x-large'}}
-                            >
-                                {text.split("").map((char, index) => {
-                                    let state = charsState[index];
-                                    let color = state === 0 ? "white" : state === 1 ? "green" : "red";
-                                    return (
-                                        <span
-                                        key={char + index}
-                                        style={{ color }}
-                                        className={currIndex + 1 === index ? "curr-letter" : ""}
-                                        >
-                                        {char}
-                                        </span>
-                                    );
-                                })}
-                            </div>
+                            <p>{Diff.diffChars(text, inputText).map((v, i) => {
+                                const color = v.added ? 'green':
+                                    v.removed ? 'red' : 'white';
+                                return (
+                                    <span style={{color: color}}>
+                                        {v.value}
+                                    </span>
+                                )
+                            })}</p>
+                            <Form onSubmit={handleSubmit(onSubmit)}>
+                                <Form.Control name="text"  ref={register()} onChange={handleFormChange}></Form.Control>
+                                <Button type="submit">Save Core</Button>
+                            </Form>
                         </Card.Body>
                     </Card>
                     </Col>
                 </Row>
+                <Modal show={showModal} onHide={() => setShowModal(false)}>
+                    <Modal.Header closeButton>Wrong!</Modal.Header>
+                    <Modal.Body>What you typed it did not match the massage :(</Modal.Body>
+                </Modal>
             </div>
             }
         </Container>
@@ -314,6 +317,7 @@ function Console() {
     const [tally, setTally] = useState({tally: [], meeting_state: "discussion"});
     const token = sessionStorage.getItem('game-token');
     const [type, setType] = useState('Meeting Room');
+    const [text, setText] = useState('');
 
     const history = useHistory();
 
@@ -327,6 +331,9 @@ function Console() {
         fetch(sessionStorage.getItem('api-host')+'api/player_profile', requestOptions).then(response => response.json()).then((data) => {
             if (data.success) {
                 setType(data.console_type);
+                if (data.console_type != "Meeting Room" && data.game_state == "end") {
+                    history.push('/end');
+                }
             } else {
                 history.push('/');
             }
@@ -369,8 +376,10 @@ function Console() {
 
     useEffect(() => {
         socket.on("reactor update", (data) => {
-            console.log(data);
             setReactorStatus(data);
+            if (data.passage != text) {
+                setText(data.passage);
+            }
         });
     });
 
@@ -384,7 +393,7 @@ function Console() {
                     }
 
                     {type == "Reactor" &&
-                        <Reactor reactorStatus={reactorStatus} token={token} socket={socket}/>
+                        <Reactor reactorStatus={reactorStatus} token={token} socket={socket} text={text} history={history}/>
                     }
                 </div>
             }

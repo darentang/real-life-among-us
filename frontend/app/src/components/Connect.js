@@ -26,12 +26,13 @@ function Connect(props) {
         if (data.address == '') {
             return;
         }
-        let address;
-        if (data.port == ''){
-            address = data.protocol + data.address + '/';
-        } else {
-            address = data.protocol + data.address + `:${data.port}/`;
-        }
+        // let address;
+        // if (data.port == ''){
+        //     address = data.protocol + data.address + '/';
+        // } else {
+        //     address = data.protocol + data.address + `:${data.port}/`;
+        // }
+        const address = data.address;
         const requestOptions = {
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }
@@ -62,19 +63,19 @@ function Connect(props) {
 
                 <Form onSubmit={handleSubmit(checkConnect)}>
                     <Form.Group>
-                        <Form.Label>Server IP Address</Form.Label>
+                        <Form.Label>Server Address</Form.Label>
                         <InputGroup>
-                            <InputGroup.Prepend>
+                            {/* <InputGroup.Prepend>
                                 <Form.Control as="select" name='protocol' ref={register()} defaultValue="https://">
                                     <option>http://</option>
                                     <option>https://</option>
                                 </Form.Control>
-                            </InputGroup.Prepend>
+                            </InputGroup.Prepend> */}
                             <Form.Control name="address" ref={register()} ></Form.Control>
-                            <InputGroup.Append>
+                            {/* <InputGroup.Append>
                                 <Form.Control name='port' ref={register()} defaultValue="5000">
                                 </Form.Control>
-                            </InputGroup.Append>
+                            </InputGroup.Append> */}
                         </InputGroup>
                     </Form.Group>
                     <Button type="submit">Connect</Button>

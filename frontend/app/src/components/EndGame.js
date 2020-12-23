@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import Container from 'react-bootstrap/esm/Container';
 
 import Jumbotron from 'react-bootstrap/Jumbotron';
+import Button from 'react-bootstrap/Button';
 
 import { useHistory } from "react-router-dom";
 
@@ -22,7 +23,7 @@ function EndGame() {
                 setSuccess(true);
                 setInfo(data);
             } else {
-                history.push('/' + data.state);
+                history.push('/');
             }
         })
     }, []);
@@ -35,7 +36,9 @@ function EndGame() {
         
                         <p>The {info.who} won. </p>
                         <p>The imposters are {info.imposters.join(',')}</p>
-                        
+                        <Button onClick={()=>history.push('/')}>
+                            Return
+                        </Button>
                     </div>
                 }
                 {!success &&

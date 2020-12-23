@@ -105,7 +105,7 @@ game_settings = {
     'prob_dummy': 0.1,
     'dummy_cooldown_min': 30,
     'dummy_cooldown_max': 60,
-    'sabotage_cooldown': 80,
+    'sabotage_cooldown': 10,
     'reactor_meltdown_duration': 60
 }
 
@@ -117,7 +117,7 @@ discussion_end = datetime.datetime.now()
 voting_end = datetime.datetime.now()
 sabotage_expire = datetime.datetime.now()
 reactor_expire = datetime.datetime.now()
-reactor_passage =  ""
+reactor_passage = ""
 dev_sid = ""
 winner = None
 
@@ -139,7 +139,7 @@ room_list = [
     "Front Door"
 ]
 
-
+@app.route('/api/populate', methods=['GET'])
 def populate(num_players=5, num_consoles=1):
     class Empty:
         pass
@@ -163,6 +163,8 @@ def populate(num_players=5, num_consoles=1):
             "type": "Reactor"
         }
         _add_console(request)
+
+    return {'success': True}
 
 @app.route('/api/reset', methods=['POST'])
 def reset():
@@ -509,7 +511,8 @@ def broadcast_reactor_state():
         {
             'reactor_state': reactor_state,
             'reactor_expire': time.mktime(reactor_expire.timetuple())*1000,
-            'reactor_meltdown_duration': game_settings['reactor_meltdown_duration']
+            'reactor_meltdown_duration': game_settings['reactor_meltdown_duration'],
+            'passage': reactor_passage
         }
     )
 
@@ -689,8 +692,12 @@ def save_core():
 
 def _core_meltdown():
     
-    change_reactor_state('trigger')
+    global reactor_passage
+    with open('random_sentences.txt') as f:
+        reactor_passage = random.choice(f.read().splitlines())
+        print(reactor_passage)
 
+    change_reactor_state('trigger')
     # warn players in regular intervals
     interval = 2
     cron.add_job(
@@ -1398,7 +1405,7 @@ def disconnect():
 
 
 if __name__ == '__main__':
-    populate(num_players=8, num_consoles=2)
-    socketio.run(app, host='192.168.0.28', port=5000, certfile='server.cert', keyfile='server.key')
+    # populate(num_players=8, num_consoles=2)
+    socketio.run(app, host='localhost', port=5000)
     # http_server = WSGIServer(('',5000), app, handler_class=WebSocketHandler)
     # http_server.serve_forever()

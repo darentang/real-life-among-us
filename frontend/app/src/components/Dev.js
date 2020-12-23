@@ -125,6 +125,17 @@ function Dev() {
                     </Button>
                 </Col>
                 <Col>
+                    <Button onClick={() => {
+                        const requestOptions = {
+                            method: 'GET'
+                        };
+
+                        fetch(sessionStorage.getItem('api-host')+'api/populate', requestOptions);
+                    }}>
+                        Populate
+                    </Button>
+                </Col>
+                <Col>
                     Game State: {gameState}
                 </Col>
             </Row>
