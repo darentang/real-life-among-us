@@ -224,7 +224,7 @@ function Reactor(props) {
             phase
         },
         actions: { insertTyping, resetTyping, deleteTyping }
-        } = useTypingGame(text, {pauseOnError: false});
+        } = useTypingGame(text, {pauseOnError: true});
 
     const handleKey = (key) => {
         if (key === "Escape") {

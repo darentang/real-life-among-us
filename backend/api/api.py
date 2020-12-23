@@ -16,7 +16,6 @@ import secrets
 import json
 import datetime
 
-import emoji
 import random
 
 from scipy.stats import binom, norm, uniform

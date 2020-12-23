@@ -1,2 +1,4 @@
 email_list.txt
 email_login.txt
+backend/api/server.cert
+backend/api/server.key

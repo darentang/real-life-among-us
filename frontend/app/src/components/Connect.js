@@ -6,13 +6,11 @@ import React, { useEffect, useState, useContext } from "react";
 import Container from 'react-bootstrap/Container'
 import Jumbotron from 'react-bootstrap/Jumbotron'
 import Form from 'react-bootstrap/Form'
+import InputGroup from 'react-bootstrap/InputGroup'
 import Button from 'react-bootstrap/Button'
 import Modal from 'react-bootstrap/Modal'
 
 import {useForm} from 'react-hook-form';
-
-import { useHistory } from "react-router-dom";
-
 
 
 
@@ -28,11 +26,17 @@ function Connect(props) {
         if (data.address == '') {
             return;
         }
-        const address = 'https://' + data.address + ':5000/';
+        let address;
+        if (data.port == ''){
+            address = data.protocol + data.address + '/';
+        } else {
+            address = data.protocol + data.address + `:${data.port}/`;
+        }
         const requestOptions = {
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }
         };
+        console.log(address);
         setModalState({show: true, message: 'Trying to connect...'});
         fetch(address + 'api/check_connection', requestOptions).then(response => response.json()).then(data => {
             if (data.success) {
@@ -59,7 +63,19 @@ function Connect(props) {
                 <Form onSubmit={handleSubmit(checkConnect)}>
                     <Form.Group>
                         <Form.Label>Server IP Address</Form.Label>
-                        <Form.Control name="address" ref={register()} ></Form.Control>
+                        <InputGroup>
+                            <InputGroup.Prepend>
+                                <Form.Control as="select" name='protocol' ref={register()} defaultValue="https://">
+                                    <option>http://</option>
+                                    <option>https://</option>
+                                </Form.Control>
+                            </InputGroup.Prepend>
+                            <Form.Control name="address" ref={register()} ></Form.Control>
+                            <InputGroup.Append>
+                                <Form.Control name='port' ref={register()} defaultValue="5000">
+                                </Form.Control>
+                            </InputGroup.Append>
+                        </InputGroup>
                     </Form.Group>
                     <Button type="submit">Connect</Button>
                 </Form>

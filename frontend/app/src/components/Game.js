@@ -157,6 +157,7 @@ function Task(props) {
     const [errorMessage, setErrorMessage] = useState('');
     const [showError, setShowError] = useState(false);
     const [showSecret, setShowSecret] = useState(false);
+    const [showInput, setShowInput] = useState(false);
 
 
     const handleClose = () => {
@@ -199,7 +200,7 @@ function Task(props) {
                             <Modal show={showSecret} onHide={() => setShowSecret(false)} size="lg" centered>
                                 <Modal.Header closeButton> </Modal.Header>
                                 <Modal.Body closeButton>
-                                    <h2 style={{'margin': '40vh 10vh 40vh 10vh', 'text-align': 'center'}}>
+                                    <h2 style={{'margin': '30vh 10vh 30vh 10vh', 'text-align': 'center'}}>
                                         {task.secret_code.slice(0, 4)}-{task.secret_code.slice(4, 8)}
                                     </h2>
                                 </Modal.Body>
@@ -209,17 +210,29 @@ function Task(props) {
                     }
                     {(task.task_type == "receiver" || profile.is_imposter)&&
                         <div>
-                            You are the receiver. Ask the other person in the room for the secret code.
-                            <Form onSubmit={handleSubmit(onSubmitCode)}>
-                                <Form.Group>
-                                    <Form.Label>Secret Code:</Form.Label>
-                                    <Form.Control type="text" name="code" ref={register()}>
-                                    </Form.Control>
-                                </Form.Group>
-                                <Button variant="primary" type="submit">
-                                    Submit
+                            <p>
+                                You are the receiver. Ask the other person in the room for the secret code.
+                            </p>
+                            <p>
+                                <Button onClick={() => setShowInput(true)}>
+                                    Enter Code
                                 </Button>
-                            </Form>
+                            </p>
+                            <Modal show={showInput} onHide={() => setShowInput(false)} size="lg" centered>
+                                <Modal.Header closeButton> </Modal.Header>
+                                <Modal.Body>
+                                    <Form onSubmit={handleSubmit(onSubmitCode)} style={{'margin': '30vh 10vh 30vh 10vh', 'text-align': 'center'}}>
+                                        <Form.Group>
+                                            <Form.Label>Secret Code:</Form.Label>
+                                            <Form.Control type="text" name="code" ref={register()}>
+                                            </Form.Control>
+                                        </Form.Group>
+                                        <Button variant="primary" type="submit" onClick={()=> setShowInput(false)}>
+                                            Submit
+                                        </Button>
+                                    </Form>
+                                </Modal.Body>
+                            </Modal>
                         </div>
                     }
                 </div>

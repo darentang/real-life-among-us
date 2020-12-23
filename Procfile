@@ -1,0 +1,1 @@
+web: gunicorn --chdir backend/api --worker-class eventlet -w 1 api:app

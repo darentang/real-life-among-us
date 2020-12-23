@@ -10,6 +10,7 @@ import EndGame from './components/EndGame.js'
 import Connect from './components/Connect.js'
 
 import Navbar from 'react-bootstrap/Navbar'
+import Button from 'react-bootstrap/Button'
 
 import SocketContext from './utilities/socket-context.js';
 import io from 'socket.io-client';
@@ -18,6 +19,7 @@ import {
   BrowserRouter as Router,
   Switch,
   Route,
+  useHistory
 } from "react-router-dom";
 
 function App() {
@@ -25,12 +27,30 @@ function App() {
   const [socket, setSocket] = useState(null);
   const [address, setAddress] = useState(null);
 
+  const history = useHistory();
+  
+
   useEffect(() => {
     if (sessionStorage.getItem('api-host') != null) {
       setSocket(io(sessionStorage.getItem('api-host')));
       console.log('connecting', socket);
     } 
   }, [address]);
+
+  const logoutCallback = () => {
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({class: 'player', token: sessionStorage.getItem('game-token')})
+    };
+
+    fetch(sessionStorage.getItem('api-host')+'api/delete', requestOptions);
+      
+    sessionStorage.removeItem('game-token');
+    sessionStorage.removeItem('api-host');
+    
+    window.location.href = "/";
+  }
 
 
   return (
@@ -44,9 +64,14 @@ function App() {
               </Navbar.Text>
             }
             {(sessionStorage.getItem('api-host') != null) &&
-              <Navbar.Text>
-              Connected to {sessionStorage.getItem('api-host')}
-              </Navbar.Text>
+              <div>
+                <Navbar.Text style={{'marginRight': '2vh'}}>
+                  Connected
+                </Navbar.Text>
+                <Button size="sm" variant="secondary" onClick={logoutCallback}>
+                  Logout
+                </Button>
+              </div>
             }
         </Navbar.Collapse>
     </Navbar>
