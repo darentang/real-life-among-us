@@ -282,9 +282,9 @@ function Reactor(props) {
                     <Card>
                         <Card.Header style={{'font-size': 'large'}}>Type the following passage:</Card.Header>
                         <Card.Body>
-                            <p>{Diff.diffChars(text, inputText).map((v, i) => {
-                                const color = v.added ? 'green':
-                                    v.removed ? 'red' : 'white';
+                            <p style={{fontSize: 'xx-large'}}>{Diff.diffChars(text, inputText).map((v, i) => {
+                                const color = v.added ? 'red':
+                                    v.removed ? 'white' : 'green';
                                 return (
                                     <span style={{color: color}}>
                                         {v.value}
@@ -301,7 +301,7 @@ function Reactor(props) {
                 </Row>
                 <Modal show={showModal} onHide={() => setShowModal(false)}>
                     <Modal.Header closeButton>Wrong!</Modal.Header>
-                    <Modal.Body>What you typed it did not match the massage :(</Modal.Body>
+                    <Modal.Body>What you typed it did not match the message :(</Modal.Body>
                 </Modal>
             </div>
             }

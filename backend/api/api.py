@@ -533,7 +533,7 @@ def end_meeting():
     duplicates = len([e for e in tally if e['tally'] == most_voted['tally']])
     num_imposter_alive = User.query.filter_by(is_imposter=True).filter_by(dead=False).count()
 
-    if duplicates == 1:
+    if duplicates == 1 and most_voted['tally'] >= 3:
         most_voted = User.query.get(most_voted['id'])
         _kill(most_voted)
         
@@ -724,7 +724,7 @@ def _dummify():
     alive_crewmates = User.query.filter_by(dead=False).filter_by(is_imposter=False).all()
     random.shuffle(alive_crewmates)
     
-    for i in range(len(alive_crewmates) // 4):
+    for i in range(len(alive_crewmates) // 2):
         player = alive_crewmates[i]
         next_task = Task.query.get(player.next_task)
         next_task.assigned -= 1
@@ -1406,6 +1406,6 @@ def disconnect():
 
 if __name__ == '__main__':
     # populate(num_players=8, num_consoles=2)
-    socketio.run(app, host='localhost', port=2000, certfile="cert.pem", keyfile="key.pem")
+    socketio.run(app, host='192.168.0.28', port=2000, certfile="cert.pem", keyfile="key.pem")
     # http_server = WSGIServer(('',5000), app, handler_class=WebSocketHandler)
     # http_server.serve_forever()

@@ -284,7 +284,7 @@ function SecretMenu(props) {
                 <Card>
                     <Card.Header as="h5">Dummify</Card.Header>
                     <Card.Body>
-                        <Card.Text>Turn 25% of current tasks to dummy tasks.</Card.Text>
+                        <Card.Text>Turn 50% of current tasks to dummy tasks.</Card.Text>
                     </Card.Body>
                     <Card.Footer>
                         <Button onClick={() => {
@@ -437,6 +437,13 @@ function Game() {
 
     return (
         <Container style={{'topMargin': '5vh'}}>
+            <div style={{position: 'relative', 'zIndex': 2070, opacity:0.8}}>
+                <Toast show={showToast} onClose={()=>{setShowToast(false)}} style={{position: 'absolute', top: '0', right: '0'}}>
+                    <Toast.Header>Notification</Toast.Header>
+
+                    <Toast.Body>{toastMessage}</Toast.Body>
+                </Toast>
+            </div>
 
             <Row>
                 <Col>
@@ -483,11 +490,6 @@ function Game() {
                         </div>
                     </Tab>
             </Tabs>
-            <Toast show={showToast} onClose={()=>{setShowToast(false)}} style={{position: 'absolute', top: '5vh', right: '5vh'}}>
-                <Toast.Header>Notification</Toast.Header>
-
-                <Toast.Body>{toastMessage}</Toast.Body>
-            </Toast>
         </Container>
     );
 }
