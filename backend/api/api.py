@@ -1406,6 +1406,6 @@ def disconnect():
 
 if __name__ == '__main__':
     # populate(num_players=8, num_consoles=2)
-    socketio.run(app, host='localhost', port=5000)
+    socketio.run(app, host='localhost', port=2000, certfile="cert.pem", keyfile="key.pem")
     # http_server = WSGIServer(('',5000), app, handler_class=WebSocketHandler)
     # http_server.serve_forever()
