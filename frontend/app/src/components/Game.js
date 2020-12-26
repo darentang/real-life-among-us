@@ -394,7 +394,7 @@ function Game() {
 
     useEffect(() => {
         socket.on("task update", (data) => {
-            console.log(data);
+            // console.log(data);
             setTask(data);
         });
     });
@@ -424,7 +424,7 @@ function Game() {
 
     useEffect(() => {
         socket.on("reactor update", (data) => {
-            console.log(data);
+            // console.log(data);
             setReactorStatus(data);
         });
     });

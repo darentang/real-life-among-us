@@ -95,8 +95,8 @@ db.create_all()
 
 game_settings = {
     'num_imposters': 2,
-    'meeting_duration': 10,
-    'voting_duration': 5,
+    'meeting_duration': 120,
+    'voting_duration': 30,
     'kill_cooldown': 20,
     'num_task_per_player': 2,
     'confirm_ejection': True,
@@ -105,7 +105,7 @@ game_settings = {
     'prob_dummy': 0.1,
     'dummy_cooldown_min': 30,
     'dummy_cooldown_max': 60,
-    'sabotage_cooldown': 10,
+    'sabotage_cooldown': 120,
     'reactor_meltdown_duration': 60,
     'secret_code_digits': 6
 }
@@ -569,8 +569,10 @@ def end_meeting():
     most_voted = max(tally, key=lambda e: e['tally'])
     duplicates = len([e for e in tally if e['tally'] == most_voted['tally']])
     num_imposter_alive = User.query.filter_by(is_imposter=True).filter_by(dead=False).count()
+    abstain = len([e for e in tally if e['vote_for'] is None])
 
-    if duplicates == 1 and most_voted['tally'] >= 3:
+
+    if duplicates == 1 and most_voted['tally'] >= abstain:
         most_voted = User.query.get(most_voted['id'])
         _kill(most_voted)
         
@@ -583,7 +585,7 @@ def end_meeting():
         else:
             message = f"{most_voted.username} was ejected."
     else:
-        message = "No one was ejected (draw)."
+        message = "No one was ejected."
 
     print(message)
     socketio.emit('end meeting message', {'message': message})

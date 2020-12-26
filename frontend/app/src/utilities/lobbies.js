@@ -239,7 +239,7 @@ function PlayerVote(props) {
     const tally = props.tally.tally;
     const selfName = props.selfName;
     const token = props.token;
-    const disableAll = props.disable;
+    var disableAll = props.disable;
 
 
     return (
@@ -248,7 +248,9 @@ function PlayerVote(props) {
                 <tr>
                     <th> Name </th>
                     <th> Voted </th>
-                    <th> Vote </th>
+                    {meetingState != "reveal" &&
+                        <th> Vote </th>
+                    }
                     {meetingState == "reveal" &&
                         <>
                         <th> Voted For </th>
@@ -268,21 +270,23 @@ function PlayerVote(props) {
                         <tr key={v.username}>
                             <td>{v.username} </td>
                             <td>{v.vote_for === null ? "No" : "Yes"} </td>
-                            <td> 
-                                <Button variant="danger" onClick={()=> {
-                                    const requestOptions = {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({token: token, vote_for_id:v.id})
-                                    };
+                            {meetingState != "reveal" && 
+                                <td> 
+                                    <Button variant="danger" onClick={()=> {
+                                        const requestOptions = {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({token: token, vote_for_id:v.id})
+                                        };
 
-                                    fetch(sessionStorage.getItem('api-host')+'api/register_vote', requestOptions);
-                                }}
-                                disabled={disabled}
-                                >
-                                    Vote
-                                </Button>
-                            </td>
+                                        fetch(sessionStorage.getItem('api-host')+'api/register_vote', requestOptions);
+                                    }}
+                                    disabled={disabled}
+                                    >
+                                        Vote
+                                    </Button>
+                                </td>
+                            }
                             {meetingState == "reveal" &&
                                 <>
                                 <th>{v.vote_for === null ? "-" : v.vote_for}</th>

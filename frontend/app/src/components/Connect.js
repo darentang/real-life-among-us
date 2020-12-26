@@ -37,9 +37,9 @@ function Connect(props) {
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }
         };
-        // if (address[address.length - 1] !== "/") {
-        //     address += "/";
-        // }
+        if (address[address.length - 1] !== "/") {
+            address += "/";
+        }
         console.log(address);
         setModalState({show: true, message: 'Trying to connect...'});
         fetch(address + 'api/check_connection', requestOptions).then(response => response.json()).then(data => {
