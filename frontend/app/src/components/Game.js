@@ -201,7 +201,7 @@ function Task(props) {
                                 <Modal.Header closeButton> </Modal.Header>
                                 <Modal.Body closeButton>
                                     <h2 style={{'margin': '30vh 10vh 30vh 10vh', 'text-align': 'center'}}>
-                                        {task.secret_code.slice(0, 4)}-{task.secret_code.slice(4, 8)}
+                                        {task.secret_code}
                                     </h2>
                                 </Modal.Body>
                                 

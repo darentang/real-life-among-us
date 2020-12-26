@@ -21,6 +21,7 @@ import {
     DisplayConsoleList, 
     DisplayPlayerList, 
     DisplayGameSettings,
+    DisplayRoomList,
     EditGameSettings,
     BlockModal,
     MeetingTally,
@@ -35,6 +36,7 @@ function MeetingRoom(props) {
     // player list state
     const [playerList, setPlayerList] = useState([]);
     const [consoleList, setConsoleList] = useState([]);
+    const [roomList, setRoomList] = useState([]);
     
     const [progress, setProgress] = useState({completed:0, total:1});
     const [showModal, setShowModal] = useState(false);
@@ -43,7 +45,7 @@ function MeetingRoom(props) {
     const [gameSettings, setGameSettings] = useState(null);
     const [remain ,setRemain] = useState(duration);
 
-
+    const [showSettingsModal, setShowSettingsModal] = useState({settings: false, room: false});
 
 
     const handleStartGame = () => {
@@ -92,6 +94,7 @@ function MeetingRoom(props) {
                 setConsoleList(data.consoles);
                 setGameSettings(data.game_settings);
                 setProgress(data.task_status);
+                setRoomList(data.room_list);
             } else {
                 // not authorised, return to index
                 history.push('/');
@@ -160,6 +163,21 @@ function MeetingRoom(props) {
                     }}>
                         Emergency Meeting!
                     </Button>
+                    <div style={{position: 'relative'}}>
+                        <Button style={{position: 'absolute', right: 0, bottom:0}} onClick={() => {
+                            
+                            const requestOptions = {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({token: token})
+                            };
+
+                            // send request to api
+                            fetch(sessionStorage.getItem('api-host')+'api/reset', requestOptions);
+                        }}>
+                            Reset
+                        </Button>
+                    </div>
                 </div>
                 }
                 {gameState == 'end' &&
@@ -180,15 +198,28 @@ function MeetingRoom(props) {
 
                 }
             </Jumbotron>
-            <Row>
-                <Col>
-                    <div style={{'margin-top': '1vh', 'margin-bottom': '2vh'}}>
-                        <h4>Task Progress</h4>
-                        <p>{progress.completed} out of {progress.total} completed.</p>
-                        <ProgressBar striped variant="success" now={Math.round(progress.completed/progress.total*100)}/>
-                    </div>
-                </Col>
-            </Row>
+            {gameState != 'lobby' && 
+                <Row>
+                    <Col>
+                        <div style={{'margin-top': '1vh', 'margin-bottom': '2vh'}}>
+                            <h4>Task Progress</h4>
+                            <p>{progress.completed} out of {progress.total} completed.</p>
+                            <ProgressBar striped variant="success" now={Math.round(progress.completed/progress.total*100)}/>
+                        </div>
+                    </Col>
+                </Row>
+            }
+            {gameState == 'lobby' &&
+                <div>
+                    <h4>Change Game Settings</h4>
+                    <Button onClick={() => setShowSettingsModal({settings: true, room: false})} style={{margin: '2vh'}}>
+                        Edit Settings
+                    </Button>
+                    <Button onClick={() => setShowSettingsModal({settings: false, room: true})} style={{margin: '2vh'}}>
+                        Edit Room List
+                    </Button>
+                </div>
+            }
             <Row>
                 <Col>
                     <h4>Players</h4>
@@ -204,15 +235,29 @@ function MeetingRoom(props) {
                     <h4>Game Settings</h4>
                     <DisplayGameSettings settings={gameSettings}/>
                 </Col>
-                {gameState == 'lobby' && 
-                    <Col>
-                        <h4>Edit Game Settings</h4>
-                        <EditGameSettings settings={gameSettings}/>
-                        
-                    </Col>
-                }
+                <Col>
+                    <h4>Room List</h4>
+                    <DisplayRoomList roomList={roomList}/>
+                </Col>
             </Row>
             <BlockModal show={showModal} remainingTime={remain} countDown={countDown}/>
+            <Modal show={showSettingsModal.settings} onHide={() => setShowSettingsModal({settings: false, room: false})}>
+                <Modal.Header closeButton>
+                    Edit Game Settings
+                </Modal.Header>
+                <Modal.Body>
+                    <EditGameSettings settings={gameSettings} onSubmit={() => setShowSettingsModal({settings: false, room: false})}/>
+                </Modal.Body>
+            </Modal>
+
+            <Modal show={showSettingsModal.room} onHide={() => setShowSettingsModal({settings: false, room: false})}>
+                <Modal.Header closeButton>
+                    Edit Room List
+                </Modal.Header>
+                <Modal.Body>
+                    <DisplayRoomList roomList={roomList} editable={true} token={token}/>
+                </Modal.Body>
+            </Modal>
         </Container>
 
     );

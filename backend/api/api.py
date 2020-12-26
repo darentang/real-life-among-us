@@ -106,7 +106,8 @@ game_settings = {
     'dummy_cooldown_min': 30,
     'dummy_cooldown_max': 60,
     'sabotage_cooldown': 10,
-    'reactor_meltdown_duration': 60
+    'reactor_meltdown_duration': 60,
+    'secret_code_digits': 6
 }
 
 imposter_list = [e for e in User.query.all() if e.is_imposter]
@@ -166,11 +167,44 @@ def populate(num_players=5, num_consoles=1):
 
     return {'success': True}
 
+@app.route('/api/delete_room', methods=['POST'])
+def delete_room():
+    token = request.json.get('token')
+    console = Console.query.filter_by(token=token).first()
+    if console is None:
+        return {'success': False}
+    if console.console_type == 'Meeting Room':
+        room_list.pop(int(request.json.get('room_id')))
+
+    lobby_update()
+    return {'success': True}
+
+@app.route('/api/add_room', methods=['POST'])
+def add_room():
+    token = request.json.get('token')
+    console = Console.query.filter_by(token=token).first()
+    if console is None:
+        return {'success': False}
+    if console.console_type == 'Meeting Room':
+        room_list.append(request.json.get('room_name'))
+
+    lobby_update()
+
+    return {'success': True}
+
+
 @app.route('/api/reset', methods=['POST'])
 def reset():
     token = request.json.get('token')
     if token == 'dev' or game_state == "end":
-        _reset()
+        return _reset()
+
+    else:
+        console = Console.query.filter_by(token=token).first()
+        if console is not None:
+            if console.console_type == 'Meeting Room':
+                return _reset()
+    
 
     return({'success': False})
 
@@ -189,6 +223,8 @@ def _reset():
     # populate()
     change_game_state('lobby')
     cron.remove_all_jobs()
+
+
     return({'success': True})
 
 @app.route('/api/test', methods=['POST', 'GET'])
@@ -304,17 +340,18 @@ def update_game_settings():
 
     print("update game settings:", data)
 
-    quantities = ['num_imposters', 'meeting_duration', 'voting_duration', 'kill_countdown', 'num_task_per_player']
-    max_val = [3, 1000, 1000, 60, 10]
+    quantities = ['num_imposters', 'meeting_duration', 'voting_duration', 'num_task_per_player', 'secret_code_digits', 'sabotage_cooldown', 'reactor_meltdown_duration']
+    max_val = [3, 1000, 1000, 60, 10, 1000, 1000]
+    min_val = [1, 1, 1, 1, 4, 10, 10]
 
-    for (q, m) in zip(quantities, max_val):
+    for (q, m, n) in zip(quantities, max_val, min_val):
 
         if data.get(q) is None or data.get(q) == "":
             reasons.append(f'{q} cannot be None')
         elif not data.get(q).isnumeric():
             reasons.append(f'{q} must be numeric')
         elif not 1 <= int(data.get(q)) <= m:
-            reasons.append(f'{q} must be less than {m} and more than or equal to 1')
+            reasons.append(f'{q} must be less than {m} and more than or equal to {n}')
         else:
             game_settings[q] = int(data.get(q))
 
@@ -733,6 +770,18 @@ def _dummify():
     db.session.commit()
 
 
+@app.route('/api/update_room_list', methods=['POST'])
+def update_room_list():
+    token = request.json.get('token')
+
+    if auth_console(token):
+        console = Console.query.filter_by(token=token).filter_by(console_type='Meeting Room').first()
+        if console is not None:
+            global room_list
+            room_list = request.json.get('room_list')
+
+    return {'success': False}
+
 @app.route('/api/player_profile', methods=['POST'])
 def player_profile():
     """
@@ -877,7 +926,8 @@ def change_game_state(*args):
 
 
 def generate_random_code():
-    return str(random.randint(10000000, 99999999))
+    n = game_settings['secret_code_digits']
+    return str(random.randint(10**(n-1), 10**n - 1))
 
 def assign_imposters():
     num_imposters = game_settings['num_imposters']
@@ -1279,7 +1329,8 @@ def lobby_update_list(l=None):
         'task_status':{'completed': Task.query.filter_by(completed=True).count(), 'total': Task.query.filter_by(dummy=False).count()},
         'game_settings': game_settings,
         'game_state': game_state,
-        'reactor_state':reactor_state
+        'reactor_state':reactor_state,
+        'room_list': room_list
         }
 
 def full_list():

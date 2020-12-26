@@ -298,6 +298,77 @@ function PlayerVote(props) {
     );
 }
 
+function DisplayRoomList(props) {
+    const roomList = props.roomList;
+    const editable = props.editable;
+    const token = props.token;
+
+    const {register, handleSubmit} = useForm();
+
+    if (editable === null) {
+        editable = false;
+    }
+
+    return (
+        <Table>
+            <tbody>
+                {
+                    roomList.map((v, i) => {
+                        return (
+                        <tr key={i}>
+                            <td>{v}</td>
+                            {editable &&
+                                <td>
+                                    <Button variant="danger" onClick={() => {
+                                        const requestOptions = {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({token: token, room_id:i})
+                                        };
+                
+                                        fetch(sessionStorage.getItem('api-host')+'api/delete_room', requestOptions);
+                                    }}>
+                                        Delete
+                                    </Button>
+                                </td>
+                            }
+                        </tr>
+                        )
+                    })
+                }
+                {editable &&
+                    <tr key={'add'}>
+                        <td colSpan="1">
+                        <Form onSubmit={handleSubmit((data) => {
+                            const requestOptions = {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({token: token, room_name: data.newRoom})
+                            };
+    
+                            fetch(sessionStorage.getItem('api-host')+'api/add_room', requestOptions).then(
+                                () => document.getElementById('add-room').reset()
+                            );
+                        })}
+                        id="add-room"
+                        >
+                                <Form.Control name="newRoom" placeholder="Room Name" ref={register()}>
+
+                                </Form.Control>
+                        </Form>
+                        </td>
+                        <td>
+                            <Button type='submit' form="add-room">
+                                Add
+                            </Button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </Table>
+    );
+}
+
 function DisplayPlayerListDebug(props) {
     if (props.list.length == 0) {
         return (<p>No Players</p>);
@@ -491,8 +562,10 @@ function DisplayGameSettings(props) {
             <ListGroup.Item><b># Task Per Player: </b>{settings.num_task_per_player}</ListGroup.Item>
             <ListGroup.Item><b>Meeting Duration: </b>{settings.meeting_duration}s</ListGroup.Item>
             <ListGroup.Item><b>Voting Duration: </b>{settings.voting_duration}s</ListGroup.Item>
-            <ListGroup.Item><b>Kill Cooldown: </b>{settings.kill_cooldown}s</ListGroup.Item>
+            <ListGroup.Item><b>Secret Code Digits: </b>{settings.secret_code_digits}</ListGroup.Item>
             <ListGroup.Item><b>Confirm Ejection: </b>{settings.confirm_ejection ? "Yes" : "No"}</ListGroup.Item>
+            <ListGroup.Item><b>Sabotage Cooldown: </b>{settings.sabotage_cooldown}</ListGroup.Item>
+            <ListGroup.Item><b>Reactor Meltdown Duration: </b>{settings.reactor_meltdown_duration}</ListGroup.Item>
         </ListGroup>
     );
 }
@@ -576,9 +649,12 @@ function EditGameSettings(props) {
                 if (!data.success) {
                     handleOpen();
                     setErrorMessage(data.reason);
+                } else {
+                    props.onSubmit();
                 }
             }
         );
+
     }
 
     const handleClose = () => setShowError(false);
@@ -616,9 +692,9 @@ function EditGameSettings(props) {
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row}>
-                    <Form.Label column sm={2}>Kill Cooldown</Form.Label>
+                    <Form.Label column sm={2}>Secret Code Digits</Form.Label>
                     <Col sm={10}>
-                        <Form.Control ref={register()} name="kill_countdown" defaultValue={settings.kill_cooldown}></Form.Control>
+                        <Form.Control ref={register()} name="secret_code_digits" defaultValue={settings.secret_code_digits}></Form.Control>
                     </Col>
                 </Form.Group>
                 <Form.Group as={Row}>
@@ -628,6 +704,18 @@ function EditGameSettings(props) {
                             <option> true </option>
                             <option> false </option>
                         </Form.Control>
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row}>
+                    <Form.Label column sm={2}>Sabotage Cooldown</Form.Label>
+                    <Col sm={10}>
+                        <Form.Control ref={register()} name="sabotage_cooldown" defaultValue={settings.sabotage_cooldown}></Form.Control>
+                    </Col>
+                </Form.Group>
+                <Form.Group as={Row}>
+                    <Form.Label column sm={2}>Reactor Meltdown Duration</Form.Label>
+                    <Col sm={10}>
+                        <Form.Control ref={register()} name="reactor_meltdown_duration" defaultValue={settings.reactor_meltdown_duration}></Form.Control>
                     </Col>
                 </Form.Group>
                 <Button variant="primary" type="submit" block>
@@ -682,6 +770,7 @@ export {
     DisplayPlayerListDebug,
     DisplayGameSettings,
     DisplayTasks,
+    DisplayRoomList,
     EditGameSettings,
     BlockModal,
     MeetingTally,

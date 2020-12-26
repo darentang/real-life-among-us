@@ -32,11 +32,14 @@ function Connect(props) {
         // } else {
         //     address = data.protocol + data.address + `:${data.port}/`;
         // }
-        const address = data.address;
+        var address = data.address;
         const requestOptions = {
             method: 'POST', 
             headers: { 'Content-Type': 'application/json' }
         };
+        // if (address[address.length - 1] !== "/") {
+        //     address += "/";
+        // }
         console.log(address);
         setModalState({show: true, message: 'Trying to connect...'});
         fetch(address + 'api/check_connection', requestOptions).then(response => response.json()).then(data => {
@@ -60,26 +63,21 @@ function Connect(props) {
         <Container>
             <Jumbotron>
                 <h1>Connect</h1>
-
+                <p>Connect to a local or global game. Note that you may need to manually allow the SSL certificate of local servers with self signed certificates.</p>
+                <h4 style={{marginTop: '2vh'}}>Local</h4>
                 <Form onSubmit={handleSubmit(checkConnect)}>
                     <Form.Group>
-                        <Form.Label>Server Address</Form.Label>
+                        <Form.Label>Local Server Address</Form.Label>
                         <InputGroup>
-                            {/* <InputGroup.Prepend>
-                                <Form.Control as="select" name='protocol' ref={register()} defaultValue="https://">
-                                    <option>http://</option>
-                                    <option>https://</option>
-                                </Form.Control>
-                            </InputGroup.Prepend> */}
                             <Form.Control name="address" ref={register()} ></Form.Control>
-                            {/* <InputGroup.Append>
-                                <Form.Control name='port' ref={register()} defaultValue="5000">
-                                </Form.Control>
-                            </InputGroup.Append> */}
                         </InputGroup>
                     </Form.Group>
                     <Button type="submit">Connect</Button>
                 </Form>
+                <h4 style={{marginTop: '2vh'}}>Global</h4>
+                <Button onClick={() => checkConnect({address:'https://impostertang-api.herokuapp.com/'})}>
+                    Connect to Global Server
+                </Button>
             </Jumbotron>
             <Modal show={modalState.show} onHide={handleHide} closeButton>
                 <Modal.Header>Information</Modal.Header>
